@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import { THEME_COOKIE, parseTheme } from "@/lib/theme";
 
-const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "Acren", template: "%s · Acren" },
@@ -14,5 +14,5 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
-  return <html lang="en" data-theme={theme} className={`${manrope.variable} h-full antialiased`}><body className="min-h-full"><a href="#main-content" className="skip-link">Skip to main content</a>{children}</body></html>;
+  return <html lang="en" data-theme={theme} className={`${inter.variable} h-full antialiased`}><body className="min-h-full"><a href="#main-content" className="skip-link">Skip to main content</a>{children}</body></html>;
 }

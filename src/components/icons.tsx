@@ -5,6 +5,7 @@ const base = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke
 
 export function UsersIcon(props: IconProps) { return <svg {...base} {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>; }
 export function PlusIcon(props: IconProps) { return <svg {...base} {...props}><path d="M12 5v14M5 12h14"/></svg>; }
+export function RateIcon(props: IconProps) { return <svg {...base} {...props}><path d="M20 13 11 22 2 13V3h10l8 8a1.4 1.4 0 0 1 0 2Z"/><circle cx="7" cy="8" r="1"/></svg>; }
 export function SearchIcon(props: IconProps) { return <svg {...base} {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>; }
 export function ArchiveIcon(props: IconProps) { return <svg {...base} {...props}><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg>; }
 export function ArrowIcon(props: IconProps) { return <svg {...base} {...props}><path d="m9 18 6-6-6-6"/></svg>; }

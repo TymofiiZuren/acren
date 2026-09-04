@@ -2,7 +2,7 @@
 
 ## Scope
 
-Improve the existing client-book demo, retaining Next.js, Supabase, the green/cream identity, and database-enforced consultant isolation. No deployment, new production dependencies, deletion of existing records, or changes to account credentials. This is not a GDPR certification.
+Improve the existing client-book demo, retaining Next.js, Supabase, the shared light/dark design system, and database-enforced consultant isolation. The subsequently approved phone-number dependency is installed. The latest request authorises committing and Vercel deployment, but hosting account/project selection and release checks remain prerequisites. No deletion of existing records or changes to account credentials. This is not a GDPR certification. See `REQUIREMENTS.md` for the current scope and remaining owner decisions.
 
 ## Implementation sequence
 

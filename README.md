@@ -2,19 +2,33 @@
 
 A private client book for Irish agricultural consultants. Consultants can sign up, sign in, add and edit client records, search by name or herd number, and archive or restore clients.
 
+See [current requirements and owner decisions](REQUIREMENTS.md) for delivery status, phone-format behaviour, rate-card scope, and the unimplemented scheme-submission, invoicing and security-provider work. Private document storage is not submission of an application.
+
+The [demo review presentation](artifacts/acren-demo-review-final.pptx) is an editable, seven-slide PPTX for opening in Keynote or PowerPoint. It describes local evidence and outstanding release gates. Its slides were rendered and inspected, but native Keynote import was not tested here.
+
+## Phone validation
+
+Phone entry defaults to Ireland and uses `libphonenumber-js/max` for national/international formatting and strict numbering-plan checks in the browser and Server Actions. Local/as-entered bypasses are removed. Changing country clears the phone draft. Country-specific digit caps reject extra keystrokes and overlong pastes with an explanation; invalid lengths or country mismatches still prevent saving. Accepted edits remain exactly as typed, including on blur, so formatting cannot move the caret. Stored numbers are formatted only when opening the form; a stable preview shows the international value that will be saved. Existing data is not rewritten, so placeholder phone values must be corrected when editing. This is not SMS verification or proof that a number is reachable. Keep the pinned library's metadata updated as numbering plans change. Direct database writes remain governed by the existing SQL constraints, not this JavaScript validator.
+
+## Rate card
+
+The authenticated `/rates` screen supports EUR planning prices per job, hour or unit, active/retired lists and confirmed retirement. Service names, units and whole-cent prices are immutable; retire and replace a rate to change them. Creation retries use a stable form ID, and the database records creation/retirement events. No job billing, VAT calculation, invoice issuing, effective-date scheduling or linked rate versions are implemented yet.
+
+Apply `20260904180000_rate_card.sql` before using this feature. It adds `rates` and `rate_events` without rewriting existing data. Both tables have forced owner-only RLS. Ordinary accounts cannot delete rates or forge history; account erasure must handle these retained records in the approved operator workflow.
+
 ## Security model
 
 Tenant isolation is enforced by PostgreSQL row-level security, not by UI filters:
 
 - every client row has a non-null `consultant_id` linked to `auth.users`;
 - ownership defaults to the authenticated database user;
-- RLS is enabled **and forced** on `public.clients`, `public.client_events`, `public.jobs` and `public.job_events`;
+- RLS is enabled **and forced** on `public.clients`, `public.client_events`, `public.jobs`, `public.job_events`, `public.rates` and `public.rate_events`;
 - client row policies require `auth.uid() = consultant_id`; history has an owner-only read policy;
 - column grants permit only client input fields on insert and editable details/archive status on update. IDs, ownership and creation/update timestamps cannot be rewritten by ordinary accounts;
 - permanent client deletion is denied to ordinary accounts, including direct API calls. Controlled erasure remains an operator release gate, not an archive action;
 - database triggers write minimal change history. Accounts can read their own history but cannot insert, edit or delete it;
 - the application uses only the signed-in user's publishable-key session—there is no service-role key in the app;
-- an 85-assertion pgTAP suite covers account isolation, history integrity, job transitions, private document storage and restricted writes using direct database roles, independently of application filters.
+- a 110-assertion pgTAP suite covers account isolation, history integrity, job transitions, rate-card protection, private document storage and restricted writes using direct database roles, independently of application filters.
 
 Run the proof locally:
 
@@ -23,7 +37,7 @@ npx supabase start
 npx supabase test db
 ```
 
-The expected result is `Files=4, Tests=85` and `Result: PASS`. Tests use synthetic fixtures inside rolled-back transactions. Storage SQL tests exercise metadata policies, not object bytes; verify the Storage API too.
+The expected result is `Files=5, Tests=110` and `Result: PASS`. Tests use synthetic fixtures inside rolled-back transactions. Storage SQL tests exercise metadata policies, not object bytes; verify the Storage API too.
 
 ## Local setup
 

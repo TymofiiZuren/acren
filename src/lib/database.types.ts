@@ -1,4 +1,7 @@
 import type { JobStatus } from "./jobs";
+import type { RateInput } from "./rates";
+
+export type Rate = RateInput & { id: string; consultant_id: string; retired: boolean; created_at: string; retired_at: string | null };
 
 export type Job = {
   id: string; client_id: string; consultant_id: string; title: string;
@@ -22,6 +25,18 @@ export type Client = {
 export type Database = {
   public: {
     Tables: {
+      rates: {
+        Row: Rate;
+        Insert: RateInput & { id?: string; consultant_id?: string };
+        Update: { retired?: boolean };
+        Relationships: [];
+      };
+      rate_events: {
+        Row: { id: string; rate_id: string; consultant_id: string; action: "created" | "retired"; occurred_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       jobs: {
         Row: Job;
         Insert: Pick<Job, "client_id" | "title" | "target_date"> & { id?: string; consultant_id?: string };

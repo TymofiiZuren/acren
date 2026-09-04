@@ -7,9 +7,12 @@
 }
 
 @theme {
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.375rem;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-manrope);
+  --font-sans: var(--font-inter);
   --color-surface: #101216;
   --color-accent: #245de5;
   --color-stone-50: #090b0e;
@@ -73,7 +76,7 @@ html[data-theme="light"] {
 
 * { box-sizing: border-box; }
 html { background: var(--background); }
-body { background: var(--background); color: var(--foreground); font-family: var(--font-manrope), sans-serif; }
+body { background: var(--background); color: var(--foreground); font-family: var(--font-inter), sans-serif; }
 button, a, input, select { -webkit-tap-highlight-color: transparent; }
 button, a { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: 0.5; }
@@ -93,14 +96,23 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   }
   .nav-link[aria-current="page"] { @apply border-stone-600 bg-stone-100 text-stone-950; }
   .panel { @apply rounded-lg border border-stone-200 bg-surface p-5 sm:p-6; }
+  .directory-row { @apply grid items-center gap-4 px-5 py-4 sm:px-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_14rem]; }
+  .workspace-notice { @apply flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs leading-5 text-amber-950 sm:px-8; }
+  .section-links { @apply flex flex-wrap gap-2 border-y border-stone-200 py-2; }
   .field-label { @apply block text-sm font-medium text-stone-800; }
   .field-input {
-    @apply mt-2 block min-h-12 w-full rounded-md border border-stone-300 bg-surface px-3.5 py-2.5 text-base text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-emerald-700 focus:ring-3 focus:ring-emerald-700/15 aria-invalid:border-red-600 aria-invalid:ring-red-600/10;
+    @apply mt-2 block min-h-11 w-full rounded-md border border-stone-300 bg-surface px-3 py-2 text-base text-stone-950 outline-none transition placeholder:text-stone-400 focus:border-emerald-700 focus:ring-3 focus:ring-emerald-700/15 aria-invalid:border-red-600 aria-invalid:ring-red-600/10;
   }
+  .phone-field { @apply mt-2 flex min-w-0 rounded-md border border-stone-300 bg-surface focus-within:border-emerald-700 focus-within:ring-3 focus-within:ring-emerald-700/15; }
+  .phone-field:has([aria-invalid="true"]) { @apply border-red-600; }
+  .phone-code { @apply relative w-24 shrink-0 rounded-l-md border-r border-stone-300 bg-stone-50 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-emerald-700; }
+  .phone-code-display { @apply pointer-events-none flex min-h-11 items-center justify-between gap-2 px-3 text-sm tabular-nums text-stone-950; }
+  .phone-code select { @apply absolute inset-0 h-full w-full cursor-pointer opacity-0; }
+  .phone-field input { @apply min-h-11 min-w-0 w-full rounded-r-md bg-transparent px-3 py-2 text-base text-stone-950 outline-none placeholder:text-stone-400 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-700; }
   .field-help { @apply mt-2 text-xs text-stone-500; }
   .field-error { @apply mt-2 text-sm font-semibold text-red-700; }
-  .alert-error { @apply rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800; }
-  .alert-success { @apply rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900; }
+  .alert-error { @apply rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800; }
+  .alert-success { @apply rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900; }
   .eyebrow { @apply text-xs font-medium uppercase tracking-[.14em] text-stone-500; }
   .skip-link { @apply fixed left-4 top-4 z-50 -translate-y-24 rounded-md bg-accent px-4 py-3 font-medium text-white focus:translate-y-0; }
 }

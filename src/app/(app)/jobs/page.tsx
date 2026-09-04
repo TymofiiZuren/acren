@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/require-session";
+import { WorkspaceMetrics } from "@/components/workspace-metrics";
 import { jobLabels, parseJobPage } from "@/lib/jobs";
 import { irelandToday, isOverdue, parseWorkFilter, workFilters } from "@/lib/work-queue";
 
@@ -29,9 +30,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
   const failure = result.error || clients?.error;
   return <div className="mx-auto max-w-7xl space-y-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
     <header className="flex flex-wrap items-end justify-between gap-5"><div className="space-y-3"><p className="eyebrow">Your practice · Work</p><h1 className="text-3xl font-medium tracking-tight sm:text-4xl">Work queue</h1><p className="text-stone-600">Every client’s work, in one place. Earliest targets first.</p></div><Link className="button-primary" href="/clients">Choose a client to add work</Link></header>
-    <div className="grid gap-4 sm:grid-cols-3">{([["Open work", open], ["Completed", completed], ["Overdue targets", overdue]] as const).map(([label, metric]) => {
-      return <section key={label} className="panel space-y-3"><h2 className="text-sm text-stone-600">{label}</h2><p className="text-3xl tabular-nums">{metric.error ? "Unavailable" : metric.count ?? 0}</p></section>;
-    })}</div>
+    <WorkspaceMetrics items={([["Open work", open], ["Completed", completed], ["Overdue targets", overdue]] as const).map(([label, metric]) => ({ label, value: metric.error ? "Unavailable" : metric.count ?? 0 }))} />
     <section className="panel space-y-6" aria-label="Job queue">
       <nav aria-label="Job status filters" className="flex flex-wrap gap-2">{Object.entries(workFilters).map(([value, label]) => <Link key={value} prefetch={false} className="nav-link" aria-current={filter === value ? "page" : undefined} href={`/jobs?filter=${value}`}>{label}</Link>)}</nav>
       <p className="text-sm text-stone-600">Includes retained work for archived clients, labelled below. Targets are your planning dates, not official scheme deadlines.</p>
