@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test src/lib/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:billing-concurrency": "node scripts/check-billing-concurrency.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
