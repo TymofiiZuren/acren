@@ -1,0 +1,40 @@
+"use client";
+import Link from 'next/link';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { saveBillingProfile,createInvoice,changeInvoice,type BillingState } from '@/app/actions/billing';
+import { SubmitButton } from '@/components/submit-button';
+import type { BillingProfile } from '@/lib/billing';
+import type { Rate } from '@/lib/database.types';
+import { formatRate,rateUnits } from '@/lib/rates';
+function Feedback({state}:{state:BillingState}) {
+ const ref=useRef<HTMLParagraphElement>(null);
+ useEffect(()=>{if(state.error) ref.current?.focus();},[state]);
+ return <>{state.error&&<p ref={ref} tabIndex={-1} role="alert" className="alert-error">{state.error}</p>}{state.message&&<p role="status" className="alert-success">{state.message}</p>}</>;
+}
+export function BusinessForm({profile}:{profile:BillingProfile|null}) {
+ const [state,action,pending]=useActionState(saveBillingProfile,{});
+ const [values,setValues]=useState({business_name:profile?.business_name??'',business_address:profile?.business_address??'',vat_status:profile?profile.vat_registered?'registered':'not_registered':'',vat_number:profile?.vat_number??''});
+ return <form action={action} onReset={e=>e.preventDefault()} className="panel space-y-5"><Feedback state={state}/>
+ <div><label className="field-label" htmlFor="business_name">Legal business name</label><input id="business_name" name="business_name" required maxLength={160} className="field-input" value={values.business_name} onChange={e=>setValues({...values,business_name:e.target.value})} disabled={pending}/></div>
+ <div><label className="field-label" htmlFor="business_address">Business address</label><textarea id="business_address" name="business_address" required maxLength={500} rows={4} className="field-input" value={values.business_address} onChange={e=>setValues({...values,business_address:e.target.value})} disabled={pending}/></div>
+ <div className="grid gap-5 sm:grid-cols-2"><div><label className="field-label" htmlFor="vat_status">VAT status</label><select id="vat_status" name="vat_status" required className="field-input" value={values.vat_status} onChange={e=>setValues({...values,vat_status:e.target.value,vat_number:e.target.value==='not_registered'?'':values.vat_number})} disabled={pending}><option value="" disabled>Choose your status</option><option value="not_registered">Not VAT registered</option><option value="registered">VAT registered</option></select></div>{values.vat_status==='registered'&&<div><label className="field-label" htmlFor="vat_number">VAT registration number</label><input id="vat_number" name="vat_number" required maxLength={40} className="field-input" value={values.vat_number} onChange={e=>setValues({...values,vat_number:e.target.value})} disabled={pending}/></div>}</div>
+ <p className="text-sm leading-6 text-stone-600">Only your account can access these details. Confirm them with your business records. Acren does not verify VAT registration. Changing them requires replacing any unissued drafts.</p><SubmitButton pendingLabel="Saving…">Save business details</SubmitButton></form>;
+}
+export function InvoiceDraftForm({jobId,requestId,rates,registered,today,recommendation}:{jobId:string;requestId:string;rates:Rate[];registered:boolean;today:string;recommendation?:{rate_id:string;quantity:number}|null}) {
+ const [state,action,pending]=useActionState(createInvoice.bind(null,requestId),{});
+ const suggestedRate=recommendation&&rates.some(r=>r.id===recommendation.rate_id)?recommendation:null;
+ const [v,set]=useState({rate_id:suggestedRate?.rate_id??'',quantity:String(suggestedRate?.quantity??1),customer_address:'',supply_date:today,due_date:'',vat_percent:''});
+ const rate=rates.find(r=>r.id===v.rate_id);
+ return <form action={action} onReset={e=>e.preventDefault()} className="panel space-y-5"><Feedback state={state}/><input type="hidden" name="job_id" value={jobId}/>
+ <div><label className="field-label" htmlFor="rate_id">Rate-card service</label><select id="rate_id" name="rate_id" className="field-input" required value={v.rate_id} onChange={e=>set({...v,rate_id:e.target.value,quantity:'1'})} disabled={pending}><option value="" disabled>Choose an active rate</option>{rates.map(r=><option key={r.id} value={r.id}>{r.name} · {formatRate(r.price_cents)} · {rateUnits[r.unit]}</option>)}</select><p className="field-help">The price will be copied into this draft.</p></div>
+ <div><label className="field-label" htmlFor="quantity">Quantity{rate?` (${rateUnits[rate.unit].toLowerCase()})`:''}</label><input id="quantity" name="quantity" className="field-input" required inputMode="decimal" maxLength={8} readOnly={rate?.unit==='fixed'} value={v.quantity} onChange={e=>set({...v,quantity:e.target.value})} disabled={pending}/><p className="field-help">Per-job rates use 1. Hours and units allow up to two decimal places.</p></div>
+ <div><label className="field-label" htmlFor="customer_address">Customer billing address</label><textarea id="customer_address" name="customer_address" required maxLength={500} rows={3} className="field-input" value={v.customer_address} onChange={e=>set({...v,customer_address:e.target.value})} disabled={pending}/></div>
+ <div className="grid gap-5 sm:grid-cols-2"><div><label className="field-label" htmlFor="supply_date">Date work was supplied</label><input id="supply_date" name="supply_date" type="date" required min="2000-01-01" max={today} className="field-input" value={v.supply_date} onChange={e=>set({...v,supply_date:e.target.value})} disabled={pending}/></div><div><label className="field-label" htmlFor="due_date">Payment due date</label><input id="due_date" name="due_date" type="date" required min={today} max="2100-12-31" className="field-input" value={v.due_date} onChange={e=>set({...v,due_date:e.target.value})} disabled={pending}/></div></div>
+ {registered?<div><label className="field-label" htmlFor="vat_percent">VAT percentage for this service</label><input id="vat_percent" name="vat_percent" required inputMode="decimal" maxLength={6} className="field-input" placeholder="Enter the applicable rate" value={v.vat_percent} onChange={e=>set({...v,vat_percent:e.target.value})} disabled={pending}/><p className="field-help">No rate is assumed. Ordinary domestic VAT only; reverse charge, exemptions and special schemes are not supported.</p></div>:<p className="text-sm text-stone-600">No VAT will be charged: your business is marked not VAT registered.</p>}
+ <p className="text-sm text-stone-600">Review the calculated amounts on the draft before issuing. Nothing is sent to the farmer at this stage.</p><div className="flex flex-wrap gap-3"><SubmitButton pendingLabel="Creating draft…">Create draft invoice</SubmitButton><Link href="/invoices" className="button-secondary">Cancel</Link></div></form>;
+}
+export function InvoiceAction({id,action,today,issueDate}:{id:string;action:'issue'|'void'|'paid';today:string;issueDate?:string}) {
+ const [state,submit]=useActionState(changeInvoice.bind(null,id,action),{});
+ const label=action==='issue'?'Issue invoice':action==='void'?'Discard draft':'Record full payment';
+ return <form action={submit} className="space-y-3"><Feedback state={state}/>{action==='paid'&&<div><label htmlFor="paid_date" className="field-label">Payment received date</label><input id="paid_date" name="paid_date" type="date" required min={issueDate} max={today} defaultValue={today} className="field-input"/></div>}<label className="flex min-h-11 items-start gap-3 text-sm leading-6"><input type="checkbox" name="confirm" value="yes" required className="mt-1.5"/>{action==='issue'?'I have checked the customer, supplier, dates, rate and tax. Issuing fixes these details and assigns a number.':action==='void'?'Discard this draft and return the work to unbilled. The draft record is retained.':'I confirm the full invoice amount has been received. This records payment; it does not collect money.'}</label><SubmitButton pendingLabel="Saving…" className={action==='void'?'button-secondary':'button-primary'}>{label}</SubmitButton></form>;
+}

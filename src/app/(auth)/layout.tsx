@@ -15,8 +15,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <section className="relative hidden overflow-hidden bg-surface p-16 text-stone-950 lg:flex lg:flex-col lg:justify-end">
         <div className="absolute -right-24 -top-24 size-[30rem] rounded-full border border-stone-200" />
         <div className="absolute -right-8 -top-8 size-[18rem] rounded-full border border-stone-200" />
-        <blockquote className="relative max-w-xl text-3xl font-semibold leading-snug tracking-tight">“The client book should be the easiest part of running the practice.”</blockquote>
-        <p className="relative mt-5 text-sm font-semibold uppercase tracking-[.18em] text-stone-600">Built for Irish agricultural consultants</p>
+        <p className="relative text-sm font-semibold uppercase tracking-[.18em] text-stone-600">Acren workspace</p>
+        <h2 className="relative mt-5 max-w-xl text-3xl font-semibold leading-snug tracking-tight">Client records, scheme work, rates and invoices.</h2>
+        <p className="relative mt-5 max-w-lg leading-7 text-stone-600">Day-to-day practice administration for Irish agricultural consultants.</p>
       </section>
     </main>
   );
