@@ -34,6 +34,5 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
     {message && <div className="alert-success" role="status">{message}</div>}
     {archived && <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">Archiving does not erase personal data. Review retained records against your practice’s retention policy. Restore a client whenever work resumes.</div>}
     <ClientDirectory key={JSON.stringify([archived, notice, initial])} initial={initial} archived={archived} />
-    <p className="text-xs leading-5 text-stone-500">Demo workspace · Use fictional data until your practice’s <Link className="font-semibold underline underline-offset-4" href="/privacy-centre">production privacy checklist</Link> is complete.</p>
   </div>;
 }

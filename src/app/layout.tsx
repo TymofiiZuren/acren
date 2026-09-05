@@ -8,7 +8,7 @@ const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "sw
 
 export const metadata: Metadata = {
   title: { default: "Acren", template: "%s · Acren" },
-  description: "A clearer client book for Irish agricultural consultants.",
+  description: "Practice management for Irish agricultural consultants.",
   icons: { icon: "/acren-mark.svg", shortcut: "/acren-mark.svg" },
 };
 

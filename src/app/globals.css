@@ -110,11 +110,19 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   .phone-code select { @apply absolute inset-0 h-full w-full cursor-pointer opacity-0; }
   .phone-field input { @apply min-h-11 min-w-0 w-full rounded-r-md bg-transparent px-3 py-2 text-base text-stone-950 outline-none placeholder:text-stone-400 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-emerald-700; }
   .field-help { @apply mt-2 text-xs text-stone-500; }
+  .invoice-sheet { @apply rounded-lg border border-stone-200 bg-white p-5 text-gray-900 sm:p-8; color-scheme: light; overflow-wrap: anywhere; }
   .field-error { @apply mt-2 text-sm font-semibold text-red-700; }
   .alert-error { @apply rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800; }
   .alert-success { @apply rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900; }
   .eyebrow { @apply text-xs font-medium uppercase tracking-[.14em] text-stone-500; }
   .skip-link { @apply fixed left-4 top-4 z-50 -translate-y-24 rounded-md bg-accent px-4 py-3 font-medium text-white focus:translate-y-0; }
+}
+
+@media print {
+  body:has(.invoice-sheet) { background: white; }
+  body:has(.invoice-sheet) * { visibility: hidden; }
+  .invoice-sheet, .invoice-sheet * { visibility: visible !important; }
+  .invoice-sheet { position: absolute; inset: 0 auto auto 0; width: 100%; border: 0; padding: 12mm; color: #111; background: white; font-size: 12pt; }
 }
 
 @media (prefers-reduced-motion: reduce) {

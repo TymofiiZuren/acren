@@ -2,6 +2,12 @@
 
 Updated 4 September 2026. Status describes this local codebase, not a production certification. The original scope was the client book; rate cards, scheme workflows and invoice issuing are additional requested scope.
 
+## Product clarification
+
+The consultant files farm scheme applications for farmer clients and needs to bill for that work. Acren's intended workflow is: choose a client, record scheme application work, apply an agreed rate, identify completed unbilled work, create and issue an invoice, then track payment. Generic document storage is not the requested filing workflow and has been removed from the client profile along with the application upload action. Existing stored files and their database protections are retained, not erased; the authenticated download route remains for existing links. No direct Department integration is implied.
+
+The confirmed issuer is each consultant under their own business name, not one shared firm. Completed jobs now connect to rate snapshots and invoices, with ownership and transitions enforced in the database. Scheme-specific work records and official submission integration remain unimplemented.
+
 ## What exists
 
 | Requirement | Current status |
@@ -11,18 +17,21 @@ Updated 4 September 2026. Status describes this local codebase, not a production
 | Phone country/format selection | Full country names/calling codes for 245 countries/territories; selected code sits beside the number. Ireland is the new-record default; existing international numbers select their detected country. No local/bypass option. Approved `libphonenumber-js/max` formats national/international input and checks length, numbering pattern and selected country in the browser and Server Actions. Changing country clears the phone draft. Country metadata caps digit entry: extra keystrokes and overlong pastes are refused with an explanation, while deletion remains possible. Existing invalid placeholders are not bulk-rewritten but must be corrected when edited. Validation does not establish reachability or ownership. |
 | Add, edit, archive, restore | Implemented and locally exercised. Archive retains data. |
 | Own-client list and name/herd search | Implemented; contact fields stay out of the directory and searches stay out of URLs. |
-| Database-level ownership | RLS on clients, jobs/history, rates/history and private Storage. Local test suite covers 110 assertions; a hosted two-account demonstration remains to be delivered. |
-| Rate card foundation | Implemented locally: services, EUR whole-cent planning prices per job/hour/unit, paginated active/retired lists, confirmed retirement, immutable prices and database-written history. No job/invoice linkage yet. |
+| Database-level ownership | RLS on clients, jobs/history, rates/history, billing profiles/invoices/history/counters and private Storage. Database functions enforce invoice creation and transitions. A hosted two-account demonstration remains to be delivered. |
+| Rate card foundation | Implemented locally: services, EUR whole-cent prices per job/hour/unit, paginated active/retired lists, confirmed retirement, immutable prices and database-written history. Active rates can be copied into invoices for completed work. |
+| Invoice creation and issuing | Local demo: per-consultant business setup, one completed job/rate per draft, database-calculated EUR/VAT totals, independent sequential numbering, immutable snapshots, draft discard, full-payment recording and overdue labels. Print/save as PDF uses the browser. No email delivery or money collection. |
 | Client jobs | Planned/in-progress/completed/cancelled, planning dates and database-written history; no official submission status or automatic billing. |
-| Documents | Private PDF upload/download, 750 KiB limit. NOT official scheme submission; NO malware scanner connected. |
+| Advisor relationship and workload | Implemented locally: the consultant account is the advisor. Client profile identifies advisor/account, accepts rate-linked recommendations with estimated quantities and net prices, and shows open/completed counts. Recommendation creates planned work, not client acceptance. No shared staffing or client portal. |
+| Client amount owed | Database aggregate over all issued/unpaid invoices including VAT, with overdue subtotal. Separate unbilled recommendation estimate excludes VAT and cancelled/invoice-linked jobs. Drafts create no debt; full payment removes debt. Partial payments unsupported. |
+| Generic document storage | Removed from the client profile and application upload flow at the user's request. Existing files, protected download links and storage policies retained. |
 | Private GitHub repo | https://github.com/TymofiiZuren/acren — newer local changes are not yet pushed. |
 | Public live URL + two handover accounts | Not delivered. Localhost is not a public deployment. SQL test identities are not handover login accounts. |
 
 ## Next build: rate card → scheme work → invoices
 
-### 1. Rate card — foundation implemented, billing integration pending
+### 1. Rate card — foundation and single-job billing implemented
 
-Implemented at `/rates`: create service/name/unit/EUR price, list 25 per page, retire with confirmation and retain the original. Values are immutable after creation; replacement currently means adding a separate rate. Database RLS, column grants, bounds, retry IDs and automatic creation/retirement events are tested locally. Prices are planning amounts, with no VAT interpretation. Outstanding:
+Implemented at `/rates`: create service/name/unit/EUR price, list 25 per page, retire with confirmation and retain the original. Values are immutable after creation; replacement currently means adding a separate rate. Database RLS, column grants, bounds, retry IDs and automatic creation/retirement events are tested locally. When used for billing, prices are net amounts and explicit VAT treatment is chosen on the draft. Broader requirements:
 
 - Consultant-owned services with scheme/category, description, billing basis (fixed/hour/unit), EUR price, effective date and active/retired state.
 - Database ownership checks, non-negative bounded decimal amounts, and versioned rates. Historical invoice lines snapshot their chosen rate; changing a rate never changes an issued invoice.
@@ -37,14 +46,14 @@ Implemented at `/rates`: create service/name/unit/EUR price, list 25 per page, r
 - Direct Department integration requires documented availability, permitted access, advisor authority and integration approval. Never store an advisor's Agfood password in client records.
 - Acceptance: account isolation applies to all records and files; no “submitted” event without the required reference/evidence; repeated requests do not duplicate submissions; all transitions have database-written history.
 
-### 3. Invoice creation and issuing — requested, not implemented
+### 3. Invoice creation and issuing — local demo implemented
 
-- Billing setup per legal issuer: business name/address, VAT status/registration where relevant, numbering series and approved payment terms. Decide whether the issuer is each consultant or a shared firm before designing ownership.
-- Draft invoice from selected work/rates, line descriptions/quantities/prices, supply date, VAT treatment, currency and due date. Calculate bounded monetary totals consistently in the database.
-- Issue through an atomic operation: allocate a unique sequential number once, freeze supplier/customer/line/tax snapshots, and record who issued it and when. Prevent duplicate billing of the same work unless deliberately allowed and audited.
-- Generate a downloadable invoice. Email delivery is separate: approve provider/sender/domain, confirm recipient, track failure/retries and do not mark an invoice sent on a failed delivery.
-- Issued invoices cannot be casually edited or deleted. Design credit notes, corrections, payment recording, partial payments and overdue views with an accountant. No automatic charges or bank transfers.
-- Acceptance: A cannot access B's invoices; concurrent issue attempts cannot reuse numbers; replay cannot double-issue; later edits to a client/rate cannot change an issued invoice; VAT/rounding and correction cases are tested.
+- `/billing`: each consultant supplies business name/address and explicit VAT status/number. Each account has its own numbering sequence starting at 1; business changes do not restart it. Custom/imported numbering and stored payment terms are not implemented.
+- `/invoices`: unbilled candidates from the latest 50 completed jobs (older work remains available on client profiles); paginated draft/unpaid/paid/discarded views. One job and active rate per draft, up to two decimal quantity places, customer address, supply/due dates and explicit ordinary VAT percentage. EUR totals are calculated and bounded in PostgreSQL.
+- Supplier/customer/work/rate/tax details are snapshotted at draft creation. Issuing checks the supplier still matches the current profile, fixes the draft as issued, allocates a sequential number transactionally and records an event. A partial unique index prevents multiple live invoices for one job; exact retries are idempotent. Linked job status changes are blocked. Discarding a draft retains it and releases the work for replacement; issued invoices cannot be discarded.
+- Printable invoice with browser Save as PDF. Email delivery is separate and not implemented: approve provider/sender/domain, recipient confirmation and failure/retry handling before adding it.
+- Full-payment recording and overdue labels are implemented; no funds are collected. Credit notes, corrections, partial payments, multiple lines, special VAT cases, payment integrations and accounting exports remain unimplemented and require accountant review.
+- Local database tests cover ownership, rounding, immutable snapshots, duplicate billing and request retries. Independent-session concurrency checks pass locally; hosted verification remains a release check. This is not a VAT or GDPR compliance certification.
 
 ## Security services: decisions and acceptance criteria
 
@@ -55,7 +64,7 @@ Implemented at `/rates`: create service/name/unit/EUR price, list 25 per page, r
 
 ## Information the practice owner must supply or approve
 
-- Whether each consultant or one shared firm issues invoices; business details and VAT setup. Do not paste credentials or bank access details into chat.
+- Each consultant's verified business details and VAT setup (individual business ownership is confirmed). Do not paste credentials or bank access details into chat.
 - Initial services, prices, billing units, payment terms and invoicing numbering policy.
 - Which schemes and years to support, evidence checklists, advisor assignments and who may approve/record submissions. Confirm official integration availability and authority if direct submission is wanted.
 - Whether “security providers” means social sign-in, MFA, malware scanning or all three; approve any new service, data region, processing agreement and budget.
@@ -66,11 +75,15 @@ Implemented at `/rates`: create service/name/unit/EUR price, list 25 per page, r
 
 ### Verification on 4 September 2026
 
-- `npm test`: 37 passing tests, including stable raw phone edits, country digit limits, malformed input and server-side validation.
+- `npm test`: 43 passing tests, including advisor input/exact-cent formatting, hosted configuration checks, billing input validation, stable raw phone edits, country digit limits, malformed input and server-side validation.
 - `npm run typecheck` and `npm run lint`: passed.
-- `npx --yes supabase@2.116.0 test db`: 110 assertions passed across clients, history, jobs, documents and rates. Transactions roll back their fixtures.
+- `npx --yes supabase@2.116.0 test db`: 170 assertions passed across clients, history, jobs, documents, rates, billing and advisor relationships. Transactions roll back their fixtures. Advisor checks cover recommendation ownership/retries, retired/archived rejection, fixed quantities and debt changes through draft/issue/payment.
 - Isolated production build and session checks: passed (sign-in, HTTP-only cookies, authenticated workspace, contact minimisation and private/no-store response).
 - Browser: typing `20255501009` retains `2025550100`, mid-number correction stays at the edit position, blur does not reformat, and country changes clear the draft. A stable preview slot prevents valid-number feedback from adding a row.
+- Billing browser check: fictional business setup → completed client job → 2 × €75 rate → €150 draft → issue `INV-000001` → full-payment record passed. The client shows a locked job linking to its invoice. Invoice appearance inspected in light/dark themes. No email was sent or money collected. Native print/PDF output remains unverified.
+- `npm run test:billing-concurrency`: passed with independent local SQL sessions, eight retries of one issue operation and four independently numbered invoices. Fixtures cleaned up. Repeat against the approved hosted demo before handover.
+- Advisor browser check: two hours at €75 creates a €150 unbilled estimate and €0 owed; completion prefills quantity/rate in billing; issuing updates amount owed to €150 and unbilled estimate to €0. Only fictional demo data used.
+- `npm audit --omit=dev --audit-level=high`: no known production vulnerabilities reported. Vercel configuration now rejects local database URLs and unsupported key formats before build. See [deployment handover](docs/deployment-readiness.md) for limitations and rollout order.
 - Deployment preflight: Vercel CLI reports logged out, no linked Vercel project or hosted Supabase project reference is present. Deployment is blocked pending authenticated hosting access and approved project selection. No temporary public deployment was created.
 
 ### Outstanding delivery checks
