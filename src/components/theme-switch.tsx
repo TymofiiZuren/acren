@@ -1,13 +1,23 @@
-import { cookies } from "next/headers";
-import { changeTheme } from "@/app/actions/theme";
-import { parseTheme, THEME_COOKIE } from "@/lib/theme";
-import { SubmitButton } from "@/components/submit-button";
+"use client";
 
-export async function ThemeSwitch() {
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+import { useSyncExternalStore } from "react";
+import { parseTheme, THEME_STORAGE_KEY } from "@/lib/theme";
+
+const themeEvent = "acren-theme-change";
+const serverTheme = () => "dark" as const;
+const currentTheme = () => parseTheme(document.documentElement.dataset.theme);
+const subscribe = (notify: () => void) => {
+  window.addEventListener(themeEvent, notify);
+  return () => window.removeEventListener(themeEvent, notify);
+};
+
+export function ThemeSwitch() {
+  const theme = useSyncExternalStore(subscribe, currentTheme, serverTheme);
   const next = theme === "dark" ? "light" : "dark";
-  return <form action={changeTheme} data-preserve-draft="true">
-    <input type="hidden" name="theme" value={next} />
-    <SubmitButton className="button-quiet" pendingLabel="Changing theme…">Switch to {next} theme</SubmitButton>
-  </form>;
+  const changeTheme = () => {
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem(THEME_STORAGE_KEY, next); } catch {}
+    window.dispatchEvent(new Event(themeEvent));
+  };
+  return <button type="button" className="button-quiet" data-preserve-draft="true" onClick={changeTheme}>Switch to {next} theme</button>;
 }

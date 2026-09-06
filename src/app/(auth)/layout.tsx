@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <main id="main-content" className="grid min-h-screen bg-stone-100 lg:grid-cols-[.85fr_1.15fr]">
       <section className="flex items-center justify-center px-5 py-12 sm:px-8">
         <div className="w-full max-w-md">
-          <Link href="/" className="mb-12 inline-flex min-h-11 items-center gap-2 text-xl font-medium tracking-tight"><span className="grid size-9 place-items-center rounded-md bg-accent text-white"><AcrenMark /></span>Acren</Link>
+          <Link prefetch={false} href="/" className="mb-12 inline-flex min-h-11 items-center gap-2 text-xl font-medium tracking-tight"><span className="grid size-9 place-items-center rounded-md bg-accent text-white"><AcrenMark /></span>Acren</Link>
           <ThemeSwitch />
           {children}
         </div>

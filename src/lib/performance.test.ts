@@ -45,3 +45,36 @@ test("public and authentication pages bypass session refresh middleware", async 
   }
   assert.doesNotMatch(source, /\/\(\(\?!_next/);
 });
+
+test("the root layout stays static and restores only a device-local theme", async () => {
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  const switcher = await readFile(new URL("../components/theme-switch.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(layout, /next\/headers|await cookies\(\)/);
+  assert.match(layout, /localStorage\.getItem/);
+  assert.match(switcher, /localStorage\.setItem/);
+  assert.doesNotMatch(switcher, /actions\/theme|await cookies\(\)/);
+});
+
+test("public links do not trigger speculative route requests", async () => {
+  const files = [
+    "../app/page.tsx",
+    "../app/privacy/page.tsx",
+    "../app/(auth)/layout.tsx",
+    "../components/auth-form.tsx",
+  ];
+  for (const file of files) {
+    const source = await readFile(new URL(file, import.meta.url), "utf8");
+    for (const link of source.matchAll(/<Link\b[^>]*>/g)) {
+      assert.match(link[0], /prefetch=\{false\}/, `${file} contains a speculative link`);
+    }
+  }
+});
+
+test("login remains static while preserving the confirmation notice", async () => {
+  const page = await readFile(new URL("../app/(auth)/login/page.tsx", import.meta.url), "utf8");
+  const actions = await readFile(new URL("../app/actions/auth.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(page, /searchParams/);
+  assert.match(page, /id="confirm"/);
+  assert.match(page, /target:block/);
+  assert.match(actions, /redirect\("\/login#confirm"\)/);
+});
