@@ -1,5 +1,5 @@
 "use client";
-import Link from 'next/link';
+import { PrivateLink as Link } from '@/components/private-link';
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { saveBillingProfile,createInvoice,changeInvoice,type BillingState } from '@/app/actions/billing';
 import { SubmitButton } from '@/components/submit-button';

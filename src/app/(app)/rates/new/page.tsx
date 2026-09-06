@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { connection } from "next/server";
 import { randomUUID } from "node:crypto";
 import { RateForm } from "@/components/rate-form";

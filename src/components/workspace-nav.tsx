@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ArchiveIcon, RateIcon, InvoiceIcon, ShieldIcon, UsersIcon, WorkIcon } from "@/components/icons";
 

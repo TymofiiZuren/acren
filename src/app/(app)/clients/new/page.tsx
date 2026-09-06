@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { ClientForm } from "@/components/client-form";
 
 export const metadata: Metadata = { title: "Add client" };

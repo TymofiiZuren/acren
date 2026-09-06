@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { createJob, type JobFormState } from "@/app/actions/jobs";
 import { SubmitButton } from "@/components/submit-button";

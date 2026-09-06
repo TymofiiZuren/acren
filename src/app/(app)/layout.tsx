@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { connection } from "next/server";
 import { signOut } from "@/app/actions/auth";

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { PrivateLink as Link } from '@/components/private-link';
 import {requireSession} from '@/lib/require-session';
 import {invoiceNumber,invoiceStatuses} from '@/lib/billing';
 import {formatRate} from '@/lib/rates';

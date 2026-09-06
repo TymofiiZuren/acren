@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { PrivateLink as Link } from '@/components/private-link';
 import { requireSession } from '@/lib/require-session';
 import { BusinessForm } from '@/components/billing-forms';
 export const metadata:Metadata={title:'Business details'};

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/require-session";
 import { JobForm } from "@/components/job-form";

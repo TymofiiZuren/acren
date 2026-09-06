@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { connection } from "next/server";
 import { PlusIcon } from "@/components/icons";
 import { ClientDirectory } from "@/components/client-directory";

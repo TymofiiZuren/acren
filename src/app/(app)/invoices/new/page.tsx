@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import Link from 'next/link';
+import { PrivateLink as Link } from '@/components/private-link';
 import type { Metadata } from 'next';
 import { requireSession } from '@/lib/require-session';
 import { billingUuid } from '@/lib/billing';

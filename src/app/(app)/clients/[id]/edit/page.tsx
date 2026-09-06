@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { ClientForm } from "@/components/client-form";
