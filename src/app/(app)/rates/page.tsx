@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { requireSession } from "@/lib/require-session";
 import { formatRate, rateUnits } from "@/lib/rates";
 import { RetireRateForm } from "@/components/rate-form";

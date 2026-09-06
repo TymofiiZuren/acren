@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import { useActionState, useRef, useState } from "react";
 import { searchDirectory } from "@/app/actions/directory";
 import { archiveClient, restoreClient } from "@/app/actions/clients";

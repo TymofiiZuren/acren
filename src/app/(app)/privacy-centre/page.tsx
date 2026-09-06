@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Privacy centre" };

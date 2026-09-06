@@ -28,11 +28,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
       </SubmitButton>
       <p className="text-center text-sm text-stone-600">
         {login ? "New to Acren?" : "Already have an account?"}{" "}
-        <Link className="inline-flex min-h-11 items-center px-1 font-semibold text-emerald-800 underline-offset-4 hover:underline" href={login ? "/signup" : "/login"}>
+        <Link prefetch={false} className="inline-flex min-h-11 items-center px-1 font-semibold text-emerald-800 underline-offset-4 hover:underline" href={login ? "/signup" : "/login"}>
           {login ? "Create an account" : "Sign in"}
         </Link>
       </p>
-      <p className="text-center text-xs leading-5 text-stone-500">Demo only. Use fictional client data.<br /><Link href="/privacy" className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Privacy information</Link></p>
+      <p className="text-center text-xs leading-5 text-stone-500">Demo only. Use fictional client data.<br /><Link prefetch={false} href="/privacy" className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Privacy information</Link></p>
     </form>
   );
 }

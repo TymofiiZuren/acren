@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import Link from 'next/link';
+import { PrivateLink as Link } from '@/components/private-link';
 import {requireSession} from '@/lib/require-session';
 import {formatBalance} from '@/lib/advisor';
 import {RecommendWorkForm} from '@/components/recommend-work-form';

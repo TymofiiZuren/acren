@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
+import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/require-session";
 import { jobLabels, parseJobPage } from "@/lib/jobs";
 import { JobStatusForm } from "@/components/job-status-form";
@@ -6,21 +7,24 @@ import { formatRate, rateUnits } from "@/lib/rates";
 
 export async function ClientJobs({ clientId, archived, requestedPage, notice }: { clientId: string; archived: boolean; requestedPage?: string; notice?: string }) {
   const { supabase } = await requireSession();
-  const { count, error: countError } = await supabase.from("jobs").select("id", { count: "exact", head: true }).eq("client_id", clientId);
+  const requested = parseJobPage(requestedPage);
+  const { data: jobs, error, count } = await supabase.from("jobs").select("id,title,target_date,status,version", { count: "exact" })
+    .eq("client_id", clientId).order("created_at", { ascending: false }).order("id").range((requested - 1) * 10, requested * 10 - 1);
   const pages = Math.max(1, Math.ceil((count ?? 0) / 10));
-  const page = Math.min(parseJobPage(requestedPage), pages);
-  const { data: jobs, error } = await supabase.from("jobs").select("id,title,target_date,status,version")
-    .eq("client_id", clientId).order("created_at", { ascending: false }).order("id").range((page - 1) * 10, page * 10 - 1);
-  const billing = jobs?.length ? await supabase.from("invoices").select("id,job_id,status").in("job_id",jobs.map(j=>j.id)).neq("status","void") : null;
-  const recommendations = jobs?.length ? await supabase.from("work_recommendations").select("job_id,rate_name,unit,quantity,estimate_cents").in("job_id",jobs.map(j=>j.id)) : null;
-  const history = jobs?.length ? await supabase.from("job_events").select("id,job_id,status,version,occurred_at")
-    .eq("client_id", clientId).in("job_id", jobs.map((job) => job.id)).order("occurred_at", { ascending: false }).order("id").limit(20) : null;
+  const page = Math.min(requested, pages);
+  if ((count ?? 0) > 0 && requested > pages) redirect(`/clients/${clientId}?jobPage=${pages}#jobs`);
+  const [billing, recommendations, history] = jobs?.length ? await Promise.all([
+    supabase.from("invoices").select("id,job_id,status").in("job_id", jobs.map((job) => job.id)).neq("status", "void"),
+    supabase.from("work_recommendations").select("job_id,rate_name,unit,quantity,estimate_cents").in("job_id", jobs.map((job) => job.id)),
+    supabase.from("job_events").select("id,job_id,status,version,occurred_at")
+      .eq("client_id", clientId).in("job_id", jobs.map((job) => job.id)).order("occurred_at", { ascending: false }).order("id").limit(20),
+  ]) : [null, null, null];
   return <section id="jobs" className="panel scroll-mt-8 space-y-6" aria-labelledby="jobs-title">
     <div className="flex flex-wrap items-center justify-between gap-4"><div className="space-y-2"><h2 id="jobs-title" className="text-xl font-medium">Client jobs</h2><p className="text-sm leading-6 text-stone-600">Track the work before it becomes an invoice.</p></div>{!archived && <Link prefetch={false} className="button-secondary" href={`/clients/${clientId}/jobs/new`}>Add job</Link>}</div>
     {notice === "job-added" && <p role="status" className="text-sm font-semibold text-emerald-800">Job added.</p>}
     {notice === "recommended" && <p role="status" className="text-sm font-semibold text-emerald-800">Recommendation saved as planned work. No invoice or client acceptance recorded.</p>}
     {archived && <p className="text-sm leading-6 text-stone-600">Jobs are read-only while this client is archived. Restore the client to resume work.</p>}
-    {error || countError ? <p className="alert-error" role="alert">Jobs could not be loaded. Refresh to try again.</p> : !jobs?.length ? <p className="text-sm text-stone-600">No jobs yet. Add the first piece of work when you’re ready.</p> : <>
+    {error ? <p className="alert-error" role="alert">Jobs could not be loaded. Refresh to try again.</p> : !jobs?.length ? <p className="text-sm text-stone-600">No jobs yet. Add the first piece of work when you’re ready.</p> : <>
       <p className="text-sm text-stone-600">{count} {count === 1 ? "job" : "jobs"} · Page {page} of {pages} · Newest first</p>
       <ul className="divide-y divide-stone-200">{jobs.map((job) => <li key={job.id} className="space-y-4 py-5">
         <div className="flex flex-wrap items-start justify-between gap-3"><h3 className="min-w-0 break-words font-medium">{job.title}</h3><span className="rounded-full bg-stone-100 px-3 py-1 text-sm font-semibold">{jobLabels[job.status]}</span></div>

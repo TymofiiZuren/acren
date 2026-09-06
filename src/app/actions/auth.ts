@@ -25,7 +25,7 @@ export async function signUp(_: AuthState, formData: FormData): Promise<AuthStat
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) return { error: "We couldn’t create an account. Check your details or try again later." };
   if (data.session) redirect("/clients");
-  redirect("/login?message=confirm");
+  redirect("/login#confirm");
 }
 
 export async function signOut() {

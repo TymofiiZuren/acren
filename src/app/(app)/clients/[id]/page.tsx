@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PrivateLink as Link } from "@/components/private-link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/require-session";
@@ -19,12 +19,15 @@ export default async function ClientProfile({ params, searchParams }: { params: 
   const { id } = await params;
   const { jobPage, notice } = await searchParams;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) notFound();
-  const { data: client, error } = await supabase.from("clients").select("id,name,herd_number,county,phone,email,archived_at,created_at,updated_at").eq("id", id).maybeSingle();
+  const [clientResult, eventResult] = await Promise.all([
+    supabase.from("clients").select("id,name,herd_number,county,phone,email,archived_at,created_at,updated_at").eq("id", id).maybeSingle(),
+    supabase.from("client_events").select("id,action,changed_fields,occurred_at").eq("client_id", id)
+      .order("occurred_at", { ascending: false }).order("id").limit(20),
+  ]);
+  const { data: client, error } = clientResult;
   if (error) throw new Error("Could not load client profile");
   if (!client) notFound();
-  const { data: events, error: historyError } = await supabase.from("client_events")
-    .select("id,action,changed_fields,occurred_at").eq("client_id", id)
-    .order("occurred_at", { ascending: false }).order("id").limit(20);
+  const { data: events, error: historyError } = eventResult;
   const actions = { created: "Client added", updated: "Details updated", archived: "Client archived", restored: "Client restored" };
   const fieldNames: Record<string, string> = { name: "Name", herd_number: "Herd number", county: "County", phone: "Phone", email: "Email", archived_at: "Archive status" };
   const links = contactLinks(client.email, client.phone);
