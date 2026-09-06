@@ -16,5 +16,5 @@ export function WorkspaceNav() {
     { href: "/clients?status=archived", label: "Archived", active: pathname === "/clients" && archive, icon: <ArchiveIcon /> },
     { href: "/privacy-centre", label: "Privacy centre", active: pathname === "/privacy-centre", icon: <ShieldIcon /> },
   ];
-  return <nav aria-label="Main navigation" className="flex flex-wrap gap-1 lg:flex-col">{items.map((item) => <Link key={item.href} href={item.href} className="nav-link" aria-current={item.active ? "page" : undefined}>{item.icon}{item.label}</Link>)}</nav>;
+  return <nav aria-label="Main navigation" className="flex flex-wrap gap-1 lg:flex-col">{items.map((item) => <Link key={item.href} href={item.href} prefetch={false} className="nav-link" aria-current={item.active ? "page" : undefined}>{item.icon}{item.label}</Link>)}</nav>;
 }

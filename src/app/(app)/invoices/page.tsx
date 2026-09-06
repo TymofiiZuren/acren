@@ -10,8 +10,7 @@ export default async function InvoicesPage({searchParams}:{searchParams:Promise<
  const status=params.status&&Object.hasOwn(invoiceStatuses,params.status)?params.status as keyof typeof invoiceStatuses:'issued';
  const page=params.page&&/^\d{1,5}$/.test(params.page)?Math.max(1,Number(params.page)):1;
  const [result,completed]=await Promise.all([supabase.from('invoices').select('id,invoice_number,customer_name,status,total_cents,due_date',{count:'exact'}).eq('status',status).order('created_at',{ascending:false}).order('id').range((page-1)*25,page*25-1),supabase.from('jobs').select('id,title,client_id').eq('status','completed').order('updated_at',{ascending:false}).order('id').limit(50)]);
- const linked=completed.data?.length?await supabase.from('invoices').select('job_id').in('job_id',completed.data.map(j=>j.id)).neq('status','void'):null;
- const clients=completed.data?.length?await supabase.from('clients').select('id,name,archived_at').in('id',[...new Set(completed.data.map(j=>j.client_id))]):null;
+ const [linked,clients]=completed.data?.length?await Promise.all([supabase.from('invoices').select('job_id').in('job_id',completed.data.map(j=>j.id)).neq('status','void'),supabase.from('clients').select('id,name,archived_at').in('id',[...new Set(completed.data.map(j=>j.client_id))])]):[null,null];
  const unbilled=completed.data?.filter(j=>!linked?.data?.some(i=>i.job_id===j.id)&&clients?.data?.some(c=>c.id===j.client_id&&!c.archived_at))??[];
  const today=irelandToday(new Date());
  return <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 sm:px-8"><header className="flex flex-wrap items-start justify-between gap-4"><div className="space-y-3"><p className="eyebrow">Practice / Billing</p><h1 className="text-3xl font-medium tracking-tight">Invoices</h1><p className="text-stone-600">Turn completed work into invoices under your business name.</p></div><Link href="/billing" className="button-secondary">Business details</Link></header>
